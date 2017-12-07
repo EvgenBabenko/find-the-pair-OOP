@@ -1,1 +1,1 @@
-# findThePair-OOP
+# find-the-pair-OOP
