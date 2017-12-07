@@ -1,0 +1,188 @@
+/* -------------------------------------------
+---------------RESET
+------------------------------------------- */
+
+/* http://meyerweb.com/eric/tools/css/reset/  */
+/* v2.0 | 20110126 */
+/* License: none (public domain) */
+
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed, 
+figure, figcaption, footer, header, hgroup, 
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  font-size: 100%;
+  font: inherit;
+  vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure, 
+footer, header, hgroup, menu, nav, section {
+  display: block;
+}
+body {
+  line-height: 1;
+}
+ol, ul {
+  list-style: none;
+}
+blockquote, q {
+  quotes: none;
+}
+blockquote:before, blockquote:after,
+q:before, q:after {
+  content: '';
+  content: none;
+}
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+
+
+/* -------------------------------------------
+---------------GENERAL
+------------------------------------------- */
+
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 62.5%; /* = 10px */
+}
+
+body {
+  font-family: sans-serif;
+  font-size: 1.6rem; /* = 11px for all by default */
+}
+
+
+/* -------------------------------------------
+---------------MAIN
+------------------------------------------- */
+
+.game-box {
+  position: relative;
+  display: flex;
+  width: 760px;;
+  margin: 0 auto;
+  padding: 10px;
+}
+
+.game-box.theme-ligth {
+  background-color: blue;
+  border: 5px solid red;
+}
+
+.game-box.theme-dark {
+  background-color: green;
+  border: 5px solid grey;
+}
+
+.game-box .alert {
+  display: none;
+  z-index: 1;
+  text-align: center;
+  position: absolute;
+  width: 250px;
+  height: 100px;
+  top: calc(50% - 100px / 2);
+  left: calc(50% - 150px / 2 - 250px / 2);
+  font-size: 5rem;
+  text-transform: uppercase;
+
+  background-color: #b6b4b4;
+}
+
+#grid {
+  width: 520px;
+  height: 520px;
+}
+
+.mem-card {
+  float: left;
+
+  border-radius: 10px;
+
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.mem-card.selected {
+  background-color: white;
+}
+
+.mem-card.selected .mem-img {
+  display: block;
+}
+
+.mem-card.theme-ligth {
+  background-color: lemonchiffon;
+  border: 1px solid red;
+}
+
+.mem-card.theme-dark {
+  background-color: antiquewhite;
+  border: 1px solid grey;
+}
+
+
+.mem-img {
+  display: none;
+  height: 100%;
+  padding: 2%;
+
+  border-radius: 5%;
+}
+
+.empty {
+  opacity: 0;
+  cursor: default;
+  pointer-events: none
+}
+
+.side {
+  width: calc(100% - 520px);
+  padding-left: 20px;
+}
+
+.side > * {
+  padding-bottom: 20px;
+}
+
+.side div:last-of-type {
+  padding-bottom: 0px;
+}
+
+.timer {
+  font-size: 3rem;
+}
+
+.tabs-grid-size {
+  padding-bottom: 10px;
+}
+
+.tabs-grid-size a {
+  background-color: red;
+  cursor: pointer;
+  border: 1px solid black;
+}
+
+.tabs-grid-size a:hover {
+  background-color: green;
+}
