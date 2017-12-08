@@ -1,3 +1,7 @@
+//-------------------------------------------
+//---------------Helpers
+//-------------------------------------------
+
 function createElement(tag, props, ...children) {
     const element = document.createElement(tag);
   
@@ -15,24 +19,20 @@ function createElement(tag, props, ...children) {
   }
 
 
-
 //-------------------------------------------
 //---------------Model
 //-------------------------------------------
 
-
 class Model {
-    constructor(items = []) {
-        
-        this.items = items;
-        this.totalCards = items.map(item => {
-            return item * item;
-        });
-        this.selectedSize = items[0];
+    constructor(gridSize = 2) {
+        this.gridSize = gridSize;
+        this.cards = gridSize * gridSize;
+        this.cardSize = 0;
     }
 
-    getItems(id) {
-        return this.items.find(item => item.id === id);
+    calculateCardSize(gridWidth) {
+        this.cardSize = gridWidth / this.gridSize;
+        return this.cardSize;
     }
 }
 
@@ -41,80 +41,60 @@ class Model {
 //---------------View
 //-------------------------------------------
 
-
 class View {
     constructor() {
-        
-        this.grid = document.getElementById('grid');
-        this.size = document.getElementById('grid-size');
+        this.grid = document.querySelector('.grid');
+        this.gridWidth = this.grid.offsetWidth;
     }
 
-    createSelectSize(item) {
-        const option = createElement('option', { value: item }, `${item}`);
-    
-        return option;
-    }
-
-    createGrid(item) {
+    createCard(cardSize) {
         const img = createElement('img', { className: 'mem-img', src: './gg' });
-        const div = createElement('div', { className: 'mem-card' }, img);
+        const div = createElement('div', { className: 'mem-card theme-ligth' }, img);
+        div.style.width = `${cardSize}px`;
+        div.style.height = `${cardSize}px`;
         
         return div;
     }
 
-    // show(items) {
-    //     for (let i = 0; i < items; i++) {
-    //         let listItem = this.createSelectSize();
-    //         this.grid.appendChild(listItem);
-    //     }
-
-    //     // items.forEach(item => {
-    //     //     const listItem = this.createSelectSize(item);
-      
-    //     //     this.grid.appendChild(listItem);
-    //     // });
-    // }
-
-    show(items) {
-        items.forEach(item => {
-            const listItem = this.createSelectSize(item);
-      
-            this.size.appendChild(listItem);
-        });
+    createGrid(cards, cardSize) {
+        for (let i = 0; i < cards; i++) {
+            let card = this.createCard(cardSize);
+            this.grid.appendChild(card);
+        }
     }
-
-
 }
+
 
 //-------------------------------------------
 //---------------Controller
 //-------------------------------------------
-
 
 class Controller {
     constructor(model, view) {
         this.model = Model;
         this.view = View;
 
-        
-        // need fix it
-        view.show(model.items);
+        this.createGrid();
     }
 
-    
+    createGrid() {
+        const gridWidth = view.gridWidth;
+        const cardSize = model.calculateCardSize(gridWidth);
+
+        view.createGrid(model.cards, cardSize);
+    }
 }
-
-
 
 
 //-------------------------------------------
 //---------------Index
 //-------------------------------------------
 
+// const gridSize = [2];
 
-const gridSize = [2, 4, 6];
-
-const model = new Model(gridSize);
+const model = new Model();
 console.log(model);
 const view = new View();
+console.log(view);
 const controller = new Controller(model, view);
+console.log(controller);

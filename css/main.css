@@ -76,7 +76,7 @@ body {
 ---------------MAIN
 ------------------------------------------- */
 
-.game-box {
+.game {
   position: relative;
   display: flex;
   width: 760px;;
@@ -84,17 +84,17 @@ body {
   padding: 10px;
 }
 
-.game-box.theme-ligth {
-  background-color: blue;
-  border: 5px solid red;
+.game.theme-ligth {
+  background-color: rgb(239, 255, 236);
+  border: 5px solid rgb(179, 179, 179);
 }
 
-.game-box.theme-dark {
+.game.theme-dark {
   background-color: green;
-  border: 5px solid grey;
+  border: 5px solid rgb(0, 0, 0);
 }
 
-.game-box .alert {
+.game .alert {
   display: none;
   z-index: 1;
   text-align: center;
@@ -109,7 +109,7 @@ body {
   background-color: #b6b4b4;
 }
 
-#grid {
+.grid {
   width: 520px;
   height: 520px;
 }
@@ -173,16 +173,16 @@ body {
   font-size: 3rem;
 }
 
-.tabs-grid-size {
+.leaderboard-tabs {
   padding-bottom: 10px;
 }
 
-.tabs-grid-size a {
+.leaderboard-tabs a {
   background-color: red;
   cursor: pointer;
   border: 1px solid black;
 }
 
-.tabs-grid-size a:hover {
+.leaderboard-tabs a:hover {
   background-color: green;
 }
