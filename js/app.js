@@ -1,5 +1,5 @@
 //-------------------------------------------
-//---------------Helpers
+//---------------HELPERS
 //-------------------------------------------
 
 
@@ -34,7 +34,7 @@ class EventEmitter {
         this.events[eventName] = this.events[eventName] || [];
         this.events[eventName].push(fn);
     }
-    
+
     emit(eventName, arg) {
         if (this.events[eventName]) {
             this.events[eventName].forEach(fn => fn(arg));
@@ -44,7 +44,7 @@ class EventEmitter {
 
 
 //-------------------------------------------
-//---------------Model
+//---------------MODEL
 //-------------------------------------------
 
 
@@ -55,7 +55,9 @@ class Model extends EventEmitter {
         super();
 
         this.gridSize = gridSize;
-        this.cards = this.gridSize * this.gridSize;
+        //need fix it
+        this.selectedSize = this.gridSize[0];
+        this.cards = this.selectedSize * this.selectedSize;
         this.pairs = this.cards / 2;
         this.cardSize = 0;
         this.findedPairs = 0;
@@ -65,9 +67,18 @@ class Model extends EventEmitter {
         this.listImages = ['animals-bunny-2.jpg','animals-bunny.jpg','animals-cat-2.jpg','animals-cat.jpg','animals-dog-2.jpg','animals-dog.jpg','animals-horse-2.jpg','animals-horse.jpg','architecture-london-towerbridge.jpg','architecture-moscow-redsquare.jpg','architecture-nederlanden.jpg','architecture-newyork-publiclibrary.jpg','architecture-paris-eiffeltower.jpg','cities-tokyo-night.jpg','diamond.jpg','flower.jpg','flowers-reddahlia.jpg','flowers-waterlillies.jpg','flowers-windclock.jpg','flowers.jpg','landscape-1.jpg','landscape-2.jpg','landscape-australia-outback.jpg','landscape-netherlands-deurningen.jpg','landscape-us-edgewood.jpg'];
     }
 
+//need fix it All
+    main(selectedSize, gridWidth) {
+        this.selectedSize = selectedSize;
+        this.cards = selectedSize * selectedSize;
+        this.pairs = this.cards / 2;
+        this.cardSize = gridWidth / selectedSize;
+        return this.cardSize;
+    }
+
 
     calculateCardSize(gridWidth) {
-        this.cardSize = gridWidth / this.gridSize;
+        this.cardSize = gridWidth / this.selectedSize;
         return this.cardSize;
     }
 
@@ -104,7 +115,8 @@ class Model extends EventEmitter {
 
 
     createArray() {
-        const copyListImages = [...this.listImages].map(image => {
+        const copyListImages = [...this.listImages]
+            .map(image => {
             return this.appPath + image;
         })
             .slice(0, this.pairs)
@@ -119,7 +131,7 @@ class Model extends EventEmitter {
 
 
 //-------------------------------------------
-//---------------View
+//---------------VIEW
 //-------------------------------------------
 
 
@@ -141,7 +153,7 @@ class View extends EventEmitter {
     
 
     createCard(cardSize, image) {
-        const img = createElement('img', { className: 'mem-img', src: `${image}` });
+        const img = createElement('img', {className: 'mem-img', src: `${image}`});
         //need fix it when themes will be done
         const div = createElement('div', { className: 'mem-card theme-ligth' }, img);
         div.style.width = `${cardSize}px`;
@@ -189,11 +201,33 @@ class View extends EventEmitter {
             });
         }, 500);
     }
+
+
+    createSelectSize(gridSize) {
+        const gridSelect = document.getElementById('grid-size-select');
+
+        gridSize.forEach(elem => {
+            const option = createElement('option', {value: `${elem}`}, `${elem}`);
+
+            gridSelect.appendChild(option);
+        });
+
+        gridSelect.addEventListener('change', this.handleChange.bind(this));
+    }
+
+
+    handleChange() {
+        const gridSize = parseInt(document.getElementById('grid-size-select').value, 10);
+        console.log(gridSize);
+
+        //need fix it
+        this.emit('gridSize', gridSize);
+    }
 }   
 
 
 //-------------------------------------------
-//---------------Controller
+//---------------CONTROLLER
 //-------------------------------------------
 
 
@@ -203,12 +237,15 @@ class Controller {
         this.view = view;
 
         this.createGrid();
-
         view.on('click', this.addClick.bind(this));
         view.on('showCard', this.showCard.bind(this));
-
         model.on('hide', this.hideCard.bind(this));
         model.on('close', this.closeCard.bind(this));
+
+        //to size field logic
+        this.createSelectSize();
+        // need fix it
+        view.on('gridSize', this.selectGridSize.bind(this));
     }
 
 
@@ -228,6 +265,7 @@ class Controller {
         this.view.showCard(card);
     }
 
+
     showCard(card) {
         const cardPair = this.model.checkPair(card);
 
@@ -236,22 +274,43 @@ class Controller {
         }
     }
 
+
     closeCard(cardPair) {
         this.view.closeCard(cardPair);
     }
 
+
     hideCard(cardPair) {
         this.view.hideCard(cardPair);
+    }
+
+
+    //-------------------
+    //---------------Size field
+    //-------------------
+
+
+    createSelectSize() {
+        const gridSize = this.model.gridSize;
+
+        this.view.createSelectSize(gridSize);
+    }
+
+
+    selectGridSize(selectedSize) {
+        //need fix it
+        const gridWidth = view.gridWidth;
+        this.model.main(selectedSize, gridWidth);
     }
 }
 
 
 //-------------------------------------------
-//---------------Index
+//---------------INDEX
 //-------------------------------------------
 
 //future option: put getsize like array and get number from model
-// const gridSize = [2];
-const model = new Model();
+const gridSize = [2, 4, 6];
+const model = new Model(gridSize);
 const view = new View();
 const controller = new Controller(model, view);
