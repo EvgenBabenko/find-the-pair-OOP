@@ -51,10 +51,17 @@ class EventEmitter {
 class Model extends EventEmitter {
     //by default gridsize = 2;
     //no select grid size
-    constructor(gridSize = 2) {
+
+    constructor(customize) {
+    // constructor(gridSize = 2) {
         super();
 
-        this.gridSize = gridSize;
+        // this.customize = customize;
+        this.gridSize = customize.gridSize;
+        this.themes = customize.themes;
+
+        // this.gridSize = gridSize;
+
         //need fix it
         this.selectedSize = this.gridSize[0];
         this.cards = this.selectedSize * this.selectedSize;
@@ -176,6 +183,8 @@ class View extends EventEmitter {
 
     showCard(card) {
         card.classList.add('selected');
+        //need fix it
+        card.classList.remove('theme-ligth');
       
         this.emit('showCard', card);
     }
@@ -212,19 +221,19 @@ class View extends EventEmitter {
     }
 
     //-------------------
-    //---------------Size field
+    //---------------size field
     //-------------------
 
     createSelectSize(gridSize) {
-        const gridSelect = document.getElementById('grid-size-select');
+        const gridSizeSelect = document.getElementById('grid-size-select');
 
         gridSize.forEach(elem => {
             const option = createElement('option', {value: `${elem}`}, `${elem}`);
 
-            gridSelect.appendChild(option);
+            gridSizeSelect.appendChild(option);
         });
 
-        gridSelect.addEventListener('change', this.handleChange.bind(this));
+        gridSizeSelect.addEventListener('change', this.handleChange.bind(this));
     }
 
 
@@ -234,6 +243,33 @@ class View extends EventEmitter {
 
         //need fix it
         this.emit('gridSize', gridSize);
+    }
+
+    //-------------------
+    //---------------themes
+    //-------------------
+
+    createSelectTheme(themes) {
+        const themesSelect = document.getElementById('themes-select');
+
+        //need fix it
+        themes.forEach(elem => {
+            const option = createElement('option', {value: `${elem}`}, `${elem}`);
+
+            themesSelect.appendChild(option);
+        });
+
+        //need fix it
+        themesSelect.addEventListener('change', this.handleChangeTheme.bind(this));
+    }
+
+    //need fix it
+    handleChangeTheme() {
+        const themes = document.getElementById('themes-select').value;
+        console.log(themes);
+
+        //need fix it
+        this.emit('themes', themes);
     }
 }   
 
@@ -256,12 +292,18 @@ class Controller {
         model.on('message', this.showMessage.bind(this));
 
         //-------------------
-        //---------------Size field
+        //---------------size field
         //-------------------
 
         this.createSelectSize();
         // need fix it
         view.on('gridSize', this.selectGridSize.bind(this));
+
+        //-------------------
+        //---------------themes
+        //-------------------
+
+        this.createSelectTheme();
     }
 
 
@@ -306,7 +348,7 @@ class Controller {
     }
 
     //-------------------
-    //---------------Size field
+    //---------------size field
     //-------------------
 
     createSelectSize() {
@@ -321,6 +363,16 @@ class Controller {
         const gridWidth = view.gridWidth;
         this.model.main(selectedSize, gridWidth);
     }
+
+    //-------------------
+    //---------------themes
+    //-------------------
+
+    createSelectTheme() {
+        const themes = this.model.themes;
+
+        this.view.createSelectTheme(themes);
+    }
 }
 
 
@@ -329,7 +381,15 @@ class Controller {
 //-------------------------------------------
 
 //future option: put getsize like array and get number from model
-const gridSize = [2, 4, 6];
-const model = new Model(gridSize);
+
+const customize = {
+    gridSize: [2, 4, 6],
+    themes: ['ligth', 'dark']
+}
+
+// const gridSize = [2, 4, 6];
+// const themes = ['ligth', 'dark'];
+
+const model = new Model(customize);
 const view = new View();
 const controller = new Controller(model, view);
