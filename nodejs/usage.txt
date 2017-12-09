@@ -1,0 +1,9 @@
+#Gathering files from path, using Node.js
+
+Download and install Node.js
+
+In this directory open the command line, input:
+
+node getFiles
+
+In the directory will be created new file bundle.js, which containts all files from path
