@@ -35,9 +35,9 @@ class EventEmitter {
         this.events[eventName].push(fn);
     }
 
-    emit(eventName, arg) {
+    emit(eventName, ...arg) {
         if (this.events[eventName]) {
-            this.events[eventName].forEach(fn => fn(arg));
+            this.events[eventName].forEach(fn => fn(...arg));
         }
     }
 }
@@ -110,6 +110,8 @@ class Model extends EventEmitter {
             console.log('cardPair', this.cardPair);
         }
         console.log('checkPair is done');
+        this.emit('message', this.findedPairs, this.pairs, this.countTries);
+
         return this.cardPair;
     }
 
@@ -149,6 +151,8 @@ class View extends EventEmitter {
             let card = this.createCard(cardSize, image);
             this.grid.appendChild(card);
         });
+
+        this.message('Find all the pairs!');
     }
     
 
@@ -203,6 +207,14 @@ class View extends EventEmitter {
     }
 
 
+    message(text) {
+        document.querySelector('.message').textContent = text;
+    }
+
+    //-------------------
+    //---------------Size field
+    //-------------------
+
     createSelectSize(gridSize) {
         const gridSelect = document.getElementById('grid-size-select');
 
@@ -241,8 +253,12 @@ class Controller {
         view.on('showCard', this.showCard.bind(this));
         model.on('hide', this.hideCard.bind(this));
         model.on('close', this.closeCard.bind(this));
+        model.on('message', this.showMessage.bind(this));
 
-        //to size field logic
+        //-------------------
+        //---------------Size field
+        //-------------------
+
         this.createSelectSize();
         // need fix it
         view.on('gridSize', this.selectGridSize.bind(this));
@@ -285,10 +301,13 @@ class Controller {
     }
 
 
+    showMessage(findedPairs, cardPair, countTries) {
+        this.view.message(`You found ${findedPairs} out of ${cardPair} pairs with ${countTries} tries.`);
+    }
+
     //-------------------
     //---------------Size field
     //-------------------
-
 
     createSelectSize() {
         const gridSize = this.model.gridSize;
