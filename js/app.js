@@ -2,6 +2,7 @@
 //---------------Helpers
 //-------------------------------------------
 
+
 function createElement(tag, props, ...children) {
     const element = document.createElement(tag);
   
@@ -18,51 +19,34 @@ function createElement(tag, props, ...children) {
     return element;
 }
 
+
 function shuffle(a, b) {
     return Math.random() - 0.5;
 }
+
 
 class EventEmitter {
     constructor() {
         this.events = {};
     }
-
+    
     on(eventName, fn) {
         this.events[eventName] = this.events[eventName] || [];
         this.events[eventName].push(fn);
     }
-
+    
     emit(eventName, arg) {
         if (this.events[eventName]) {
-            this.events[eventName].forEach(listener => listener(arg));
+            this.events[eventName].forEach(fn => fn(arg));
         }
     }
 }
 
 
-// class Event {
-//     constructor(sender) {
-//         this.sender = sender;
-//         this.listeners = [];
-//     }
-
-//     attach(listener) {
-//         this.listeners.push(listener);
-//     }
-
-//     notify(args) {
-//         let index;
-        
-//         for (index = 0; index < this.listeners.length; index += 1) {
-//             this.listeners[index](this.sender, args);
-//         }
-//     }
-// }
-
-
 //-------------------------------------------
 //---------------Model
 //-------------------------------------------
+
 
 class Model extends EventEmitter {
     //by default gridsize = 2;
@@ -74,55 +58,62 @@ class Model extends EventEmitter {
         this.cards = this.gridSize * this.gridSize;
         this.pairs = this.cards / 2;
         this.cardSize = 0;
+        this.findedPairs = 0;
         this.countTries = 0;
         this.cardPair = [];
         this.appPath = './img/';
         this.listImages = ['animals-bunny-2.jpg','animals-bunny.jpg','animals-cat-2.jpg','animals-cat.jpg','animals-dog-2.jpg','animals-dog.jpg','animals-horse-2.jpg','animals-horse.jpg','architecture-london-towerbridge.jpg','architecture-moscow-redsquare.jpg','architecture-nederlanden.jpg','architecture-newyork-publiclibrary.jpg','architecture-paris-eiffeltower.jpg','cities-tokyo-night.jpg','diamond.jpg','flower.jpg','flowers-reddahlia.jpg','flowers-waterlillies.jpg','flowers-windclock.jpg','flowers.jpg','landscape-1.jpg','landscape-2.jpg','landscape-australia-outback.jpg','landscape-netherlands-deurningen.jpg','landscape-us-edgewood.jpg'];
     }
 
+
     calculateCardSize(gridWidth) {
         this.cardSize = gridWidth / this.gridSize;
         return this.cardSize;
     }
 
+
     clickCard(item) {
         if (this.cardPair.length === 2) return;
-        // if (item.classList.contains('selected')) return;
-        // if (item.classList.contains('empty')) return;
 
         this.cardPair.push(item);
-        this.checkPair(item);
+
+        return item;
     }
+
 
     checkPair(item) {
-        // if (this.cardPair !== 2) return;
+        if (this.cardPair.length !== 2) return;
+
         this.countTries++;
 
-        // if (this.cardPair[0].firstElementChild.src === this.cardPair[1].firstElementChild.src)
-
-        
-        
-        // this.countClick++;
-
-        console.log('item', item);
-        console.log('paircard', this.paircard);
-        return this.countTries;
+        if (this.cardPair[0].firstElementChild.src === this.cardPair[1].firstElementChild.src) {
+            this.findedPairs++;
+            console.log('hide');
+            this.emit('hide', this.cardPair);
+            this.cardPair = [];
+            console.log('cardPair', this.cardPair);
+        } else {
+            console.log('close');
+            this.emit('close', this.cardPair);
+            this.cardPair = [];
+            console.log('cardPair', this.cardPair);
+        }
+        console.log('checkPair is done');
+        return this.cardPair;
     }
 
+
     createArray() {
-        const copyListImages = [...this.listImages];
-
-        const array = copyListImages.map(image => {
+        const copyListImages = [...this.listImages].map(image => {
             return this.appPath + image;
-        });
-
-        const sliced = array
+        })
             .slice(0, this.pairs)
             .sort(shuffle);
-        const doubleArr = [...sliced.sort(shuffle), ...sliced.sort(shuffle)]
+
+        const doubleListImages = [...copyListImages.sort(shuffle), ...copyListImages.sort(shuffle)]
             .sort(shuffle);
     
-      return doubleArr;
+      return doubleListImages;
     }
 }
 
@@ -130,6 +121,7 @@ class Model extends EventEmitter {
 //-------------------------------------------
 //---------------View
 //-------------------------------------------
+
 
 class View extends EventEmitter {
     constructor() {
@@ -139,48 +131,63 @@ class View extends EventEmitter {
         this.gridWidth = this.grid.offsetWidth;
     }
 
-    createGrid(cards, cardSize, listImg) {
-        for (let i = 0; i < listImg.length; i++) {
-            let card = this.createCard(cardSize, listImg[i]);
+
+    createGrid(cardSize, listImg) {
+        listImg.forEach(image => {
+            let card = this.createCard(cardSize, image);
             this.grid.appendChild(card);
-        }
+        });
     }
     
+
     createCard(cardSize, image) {
-        //need get img from model
         const img = createElement('img', { className: 'mem-img', src: `${image}` });
+        //need fix it when themes will be done
         const div = createElement('div', { className: 'mem-card theme-ligth' }, img);
         div.style.width = `${cardSize}px`;
         div.style.height = `${cardSize}px`;
 
-        div.addEventListener('click', this.clickCard.bind(this));
-        div.addEventListener('click', this.showCard.bind(this));
+        div.addEventListener('click', this.handleClick.bind(this));
     
         return div;
     }
 
-    //maybe countClick should be in the model?
-    clickCard({target}) {
-        // this.countClick++
-        console.log('done', target);
-        this.emit('add', {target});
 
-        // return target;
-
-        //need send click to model
+    handleClick({target}) {
+        this.emit('click', target);
     }
 
 
-    showCard(e) {
-        const target = e.target.classList.add('selected'); 
+    showCard(card) {
+        card.classList.add('selected');
+      
+        this.emit('showCard', card);
     }
 
-    closeCard(item) {
-        console.log(item);
+
+    closeCard(cardPair) {
+        console.log('outtercardPair2', cardPair);
+        setTimeout(() => {
+            console.log('innerclose2');
+            cardPair.forEach(card => {
+                card.classList.remove('selected');
+                //need fix it
+                card.classList.add('theme-ligth');
+            });
+        }, 500);
     }
 
-    hideCard() {
-        
+
+    hideCard(cardPair) {
+        console.log('outercardPair3', cardPair);
+        setTimeout(() => {
+            console.log('innerhide');
+            cardPair.forEach(card => {
+                //need fix it
+                card.classList.remove('theme-ligth', 'selected');
+                card.classList.add('empty');
+            });
+        }, 500);
     }
 }   
 
@@ -189,36 +196,52 @@ class View extends EventEmitter {
 //---------------Controller
 //-------------------------------------------
 
+
 class Controller {
     constructor(model, view) {
         this.model = model;
         this.view = view;
 
         this.createGrid();
-        // this.addClick();
-        view.on('add', this.addClick.bind(this));
+
+        view.on('click', this.addClick.bind(this));
+        view.on('showCard', this.showCard.bind(this));
+
+        model.on('hide', this.hideCard.bind(this));
+        model.on('close', this.closeCard.bind(this));
     }
+
 
     createGrid() {
         const gridWidth = view.gridWidth;
         const cardSize = model.calculateCardSize(gridWidth);
         const listImg = model.createArray();
 
-        this.view.createGrid(this.model.cards, cardSize, listImg);
+        this.view.createGrid(cardSize, listImg);
     }
 
+
     addClick(item) {
-        // // debugger
-        
-        const pair = this.model.clickCard(item);
+        const card = this.model.clickCard(item);
+        console.log('card', card);
+       
+        this.view.showCard(card);
+    }
 
-        this.view.closeCard(pair);
-        
-        console.log('ditemone', pair);
-        // this.view.clickCard(item);
+    showCard(card) {
+        const cardPair = this.model.checkPair(card);
 
+        if (cardPair) {
+            this.view.closeCard(cardPair);
+        }
+    }
 
-        // this.model.checkPair(elem);
+    closeCard(cardPair) {
+        this.view.closeCard(cardPair);
+    }
+
+    hideCard(cardPair) {
+        this.view.hideCard(cardPair);
     }
 }
 
@@ -230,8 +253,5 @@ class Controller {
 //future option: put getsize like array and get number from model
 // const gridSize = [2];
 const model = new Model();
-console.log(model);
 const view = new View();
-console.log(view);
 const controller = new Controller(model, view);
-console.log(controller);

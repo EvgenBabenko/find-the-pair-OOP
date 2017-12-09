@@ -124,6 +124,7 @@ body {
 
 .mem-card.selected {
   background-color: white;
+  pointer-events: none;
 }
 
 .mem-card.selected .mem-img {
