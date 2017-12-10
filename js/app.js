@@ -51,30 +51,41 @@ class EventEmitter {
 class Timer extends EventEmitter {
     constructor() {
         super();
+
+        this.t = new Date();
+        this.t.setHours(0, 0, 0, 0);
+        this.s = new Date();
+        this.timerID = 0;
     }
 
-    startTimer() {
-        let t = new Date();
-        t.setHours(0, 0, 0, 0);
-        let s = new Date();
-        let timerID;
+    timerStart() {
+        let t = this.t;
+        let s = this.s;
         let duration = 500;
 
-        timerID = setInterval(() => {
+        this.timerID = setInterval(() => {
             (function() {
                 t = new Date(t.getTime() + (new Date()).getTime() - s.getTime());
+
+                // this.emit('start', this.t);
+
                 document.querySelector('.timer-field').textContent = t.toLocaleTimeString();
+
                 s = new Date();
             })();
-        }, duration);
+        }, this.duration);
     }
 
-    stop() {
-        
-    }
-
-    pauseTimer() {
-
+    timerPause() {
+        // debugger
+        console.log('pause');
+        if (this.s) {
+            clearTimeout(this.timerID);
+            this.s = false;
+        } else {
+            this.s = new Date();
+            this.timerStart();
+        }
     }
 }
 
@@ -108,25 +119,24 @@ class Model extends EventEmitter {
         this.cardPair = [];
         this.appPath = './img/';
         this.listImages = ['animals-bunny-2.jpg','animals-bunny.jpg','animals-cat-2.jpg','animals-cat.jpg','animals-dog-2.jpg','animals-dog.jpg','animals-horse-2.jpg','animals-horse.jpg','architecture-london-towerbridge.jpg','architecture-moscow-redsquare.jpg','architecture-nederlanden.jpg','architecture-newyork-publiclibrary.jpg','architecture-paris-eiffeltower.jpg','cities-tokyo-night.jpg','diamond.jpg','flower.jpg','flowers-reddahlia.jpg','flowers-waterlillies.jpg','flowers-windclock.jpg','flowers.jpg','landscape-1.jpg','landscape-2.jpg','landscape-australia-outback.jpg','landscape-netherlands-deurningen.jpg','landscape-us-edgewood.jpg'];
-
-        this.t = new Date();
-        this.t.setHours(0, 0, 0, 0);
-        this.s = new Date();
-        this.timerID;
     }
 
-//need fix it All
-    main(selectedSize, gridWidth) {
-        this.selectedSize = selectedSize;
-        this.cards = selectedSize * selectedSize;
-        this.pairs = this.cards / 2;
-        this.cardSize = gridWidth / selectedSize;
-        return this.cardSize;
-    }
+//need refactoring, maybe concat main and calculate
+    // main(selectedSize, gridWidth) {
+    //     this.selectedSize = selectedSize;
+    //     this.cards = selectedSize * selectedSize;
+    //     this.pairs = this.cards / 2;
+    //     this.cardSize = gridWidth / selectedSize;
+    //     return this.cardSize;
+    // }
 
 
     calculateCardSize(gridWidth) {
         this.cardSize = gridWidth / this.selectedSize;
+
+        this.cards = this.selectedSize * this.selectedSize;
+        this.pairs = this.cards / 2;
+
         return this.cardSize;
     }
 
@@ -233,6 +243,14 @@ class View extends EventEmitter {
     }
 
 
+    clearGrid() {
+        const listElem = [...document.querySelectorAll('.mem-card')];
+        listElem.forEach(elem => {
+            elem.remove();
+        });
+    }
+
+
     handleClick({target}) {
         this.emit('click', target);
     }
@@ -295,11 +313,11 @@ class View extends EventEmitter {
 
 
     handleChange() {
-        const gridSize = parseInt(document.getElementById('grid-size-select').value, 10);
-        console.log(gridSize);
+        const selectedSize = parseInt(document.getElementById('grid-size-select').value, 10);
+        console.log(selectedSize);
 
         //need fix it
-        this.emit('gridSize', gridSize);
+        this.emit('selectedSize', selectedSize);
     }
 
     //-------------------
@@ -333,9 +351,25 @@ class View extends EventEmitter {
     //---------------timer
     //-------------------
 
-    startTimer(t) {
-        document.querySelector('.timer-field').textContent = t;
+    timerStart(t) {
+        document.querySelector('.timer-field').textContent = t.toLocaleTimeString();
+        const pause = document.getElementById('timer-pause');
+        pause.addEventListener('click', this.handlePause.bind(this));
     }
+    
+    
+    timerBtn() {
+
+    }
+
+
+    handlePause() {
+        this.emit('pause');
+    }
+
+    //-------------------
+    //---------------animation
+    //-------------------
 }   
 
 
@@ -349,14 +383,13 @@ class Controller {
         this.timer = timer;
         this.model = model;
         this.view = view;
-
+        
         this.createGrid();
-        view.on('click', this.addClick.bind(this));
-        view.on('showCard', this.showCard.bind(this));
-
         model.on('hide', this.hideCard.bind(this));
         model.on('close', this.closeCard.bind(this));
         model.on('message', this.showMessage.bind(this));
+        view.on('click', this.addClick.bind(this));
+        view.on('showCard', this.showCard.bind(this));
 
         //-------------------
         //---------------size field
@@ -364,7 +397,7 @@ class Controller {
 
         this.createSelectSize();
         // need fix it
-        view.on('gridSize', this.selectGridSize.bind(this));
+        view.on('selectedSize', this.selectGridSize.bind(this));
 
         //-------------------
         //---------------themes
@@ -376,9 +409,9 @@ class Controller {
         //---------------timer
         //-------------------
 
-        // setInterval(this.timer.startTimer, 100);
-        this.startTimer();
-        // timer.on('startTimer', this.startTimer.bind(this));
+        this.timerStart();
+        timer.on('start', this.timerStart.bind(this));
+        view.on('pause', this.timerPause.bind(this));
     }
 
 
@@ -434,9 +467,11 @@ class Controller {
 
 
     selectGridSize(selectedSize) {
+        this.model.selectedSize = selectedSize;
+        this.view.clearGrid();
         //need fix it
-        const gridWidth = view.gridWidth;
-        this.model.main(selectedSize, gridWidth);
+        this.createGrid();
+    
     }
 
     //-------------------
@@ -453,11 +488,26 @@ class Controller {
     //---------------timer
     //-------------------
 
-    startTimer() {
+    timerStart(t) {
         // setInterval(this.timer.startTimer, 100);
-        this.timer.startTimer();
+        this.timer.timerStart();
+        this.view.timerStart(t);
 
         // this.view.startTimer(t);
+    }
+
+
+    // timerBtn() {
+    //     // setInterval(this.timer.startTimer, 100);
+    //     this.timer.timerStart();
+    //     this.view.timerStart(t);
+
+    //     // this.view.startTimer(t);
+    // }
+
+
+    timerPause() {
+        this.timer.timerPause();
     }
 }
 

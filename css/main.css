@@ -6,6 +6,7 @@
 /* v2.0 | 20110126 */
 /* License: none (public domain) */
 
+
 html, body, div, span, applet, object, iframe,
 h1, h2, h3, h4, h5, h6, p, blockquote, pre,
 a, abbr, acronym, address, big, cite, code,
@@ -26,9 +27,7 @@ time, mark, audio, video {
   font: inherit;
   vertical-align: baseline;
 }
-
 /* HTML5 display-role reset for older browsers */
-
 article, aside, details, figcaption, figure, 
 footer, header, hgroup, menu, nav, section {
   display: block;
@@ -53,9 +52,11 @@ table {
 }
 
 
+
 /* -------------------------------------------
 ---------------GENERAL
 ------------------------------------------- */
+
 
 * {
   box-sizing: border-box;
@@ -78,7 +79,8 @@ body {
 .game {
   position: relative;
   display: flex;
-  width: 760px;;
+  width: 800px;
+  height: 550px;
   margin: 0 auto;
   padding: 10px;
 }
@@ -142,6 +144,7 @@ body {
   border: 1px solid grey;
 }
 
+
 .mem-img {
   display: none;
   height: 100%;
@@ -157,6 +160,8 @@ body {
 }
 
 .side {
+  display: flex;
+  flex-direction: column;
   width: calc(100% - 520px);
   padding-left: 20px;
 }
@@ -173,6 +178,11 @@ body {
   font-size: 3rem;
 }
 
+.leaderboard {
+  display: flex;
+  flex-direction: column;
+}
+
 .leaderboard-tabs {
   padding-bottom: 10px;
 }
@@ -185,4 +195,37 @@ body {
 
 .leaderboard-tabs a:hover {
   background-color: green;
+}
+
+.leaderboard-results {
+  overflow-y: scroll;
+}
+
+.leaderboard-results-table {
+  width: 100%;
+}
+
+table, th, td {
+  border: 1px solid black;
+}
+
+th {
+  text-align: left;
+}
+
+table tr:nth-child(even) {
+  background-color: #eee;
+}
+table tr:nth-child(odd) {
+ background-color:#fff;
+}
+table th {
+  background-color: black;
+  color: white;
+}
+.table-name {
+  max-width: 75px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
