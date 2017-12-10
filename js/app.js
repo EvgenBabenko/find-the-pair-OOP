@@ -44,6 +44,42 @@ class EventEmitter {
 
 
 //-------------------------------------------
+//---------------TIMER
+//-------------------------------------------
+
+
+class Timer extends EventEmitter {
+    constructor() {
+        super();
+    }
+
+    startTimer() {
+        let t = new Date();
+        t.setHours(0, 0, 0, 0);
+        let s = new Date();
+        let timerID;
+        let duration = 500;
+
+        timerID = setInterval(() => {
+            (function() {
+                t = new Date(t.getTime() + (new Date()).getTime() - s.getTime());
+                document.querySelector('.timer-field').textContent = t.toLocaleTimeString();
+                s = new Date();
+            })();
+        }, duration);
+    }
+
+    stop() {
+        
+    }
+
+    pauseTimer() {
+
+    }
+}
+
+
+//-------------------------------------------
 //---------------MODEL
 //-------------------------------------------
 
@@ -72,6 +108,11 @@ class Model extends EventEmitter {
         this.cardPair = [];
         this.appPath = './img/';
         this.listImages = ['animals-bunny-2.jpg','animals-bunny.jpg','animals-cat-2.jpg','animals-cat.jpg','animals-dog-2.jpg','animals-dog.jpg','animals-horse-2.jpg','animals-horse.jpg','architecture-london-towerbridge.jpg','architecture-moscow-redsquare.jpg','architecture-nederlanden.jpg','architecture-newyork-publiclibrary.jpg','architecture-paris-eiffeltower.jpg','cities-tokyo-night.jpg','diamond.jpg','flower.jpg','flowers-reddahlia.jpg','flowers-waterlillies.jpg','flowers-windclock.jpg','flowers.jpg','landscape-1.jpg','landscape-2.jpg','landscape-australia-outback.jpg','landscape-netherlands-deurningen.jpg','landscape-us-edgewood.jpg'];
+
+        this.t = new Date();
+        this.t.setHours(0, 0, 0, 0);
+        this.s = new Date();
+        this.timerID;
     }
 
 //need fix it All
@@ -135,6 +176,22 @@ class Model extends EventEmitter {
             .sort(shuffle);
     
       return doubleListImages;
+    }
+
+    //-------------------
+    //---------------timer
+    //-------------------
+
+    startTimer() {
+        // debugger
+        this.t = new Date((this.t).getTime() + (new Date()).getTime() - (this.s).getTime());
+        // let t = new Date();
+
+        this.emit('startTimer', t);
+
+        this.s = new Date();
+        this.timerID = setTimeout(this.startTimer, 100);
+        return t;
     }
 }
 
@@ -271,6 +328,14 @@ class View extends EventEmitter {
         //need fix it
         this.emit('themes', themes);
     }
+
+    //-------------------
+    //---------------timer
+    //-------------------
+
+    startTimer(t) {
+        document.querySelector('.timer-field').textContent = t;
+    }
 }   
 
 
@@ -280,13 +345,15 @@ class View extends EventEmitter {
 
 
 class Controller {
-    constructor(model, view) {
+    constructor(timer, model, view) {
+        this.timer = timer;
         this.model = model;
         this.view = view;
 
         this.createGrid();
         view.on('click', this.addClick.bind(this));
         view.on('showCard', this.showCard.bind(this));
+
         model.on('hide', this.hideCard.bind(this));
         model.on('close', this.closeCard.bind(this));
         model.on('message', this.showMessage.bind(this));
@@ -304,6 +371,14 @@ class Controller {
         //-------------------
 
         this.createSelectTheme();
+
+        //-------------------
+        //---------------timer
+        //-------------------
+
+        // setInterval(this.timer.startTimer, 100);
+        this.startTimer();
+        // timer.on('startTimer', this.startTimer.bind(this));
     }
 
 
@@ -373,6 +448,17 @@ class Controller {
 
         this.view.createSelectTheme(themes);
     }
+
+    //-------------------
+    //---------------timer
+    //-------------------
+
+    startTimer() {
+        // setInterval(this.timer.startTimer, 100);
+        this.timer.startTimer();
+
+        // this.view.startTimer(t);
+    }
 }
 
 
@@ -385,11 +471,12 @@ class Controller {
 const customize = {
     gridSize: [2, 4, 6],
     themes: ['ligth', 'dark']
-}
+};
 
 // const gridSize = [2, 4, 6];
 // const themes = ['ligth', 'dark'];
 
+const timer = new Timer();
 const model = new Model(customize);
 const view = new View();
-const controller = new Controller(model, view);
+const controller = new Controller(timer,model, view);
