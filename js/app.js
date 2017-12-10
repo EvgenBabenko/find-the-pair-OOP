@@ -51,41 +51,49 @@ class EventEmitter {
 class Timer extends EventEmitter {
     constructor() {
         super();
-
-        this.t = new Date();
-        this.t.setHours(0, 0, 0, 0);
-        this.s = new Date();
-        this.timerID = 0;
     }
 
     timerStart() {
-        let t = this.t;
-        let s = this.s;
-        let duration = 500;
+        let t = new Date();
+        t.setHours(0, 0, 0, 0);
+        let s = new Date();
+        let timerID = 0;
+        console.log('timerIDouter', timerID);
+        let _this = this;
 
-        this.timerID = setInterval(() => {
-            (function() {
+        return {
+            start: function go() {
                 t = new Date(t.getTime() + (new Date()).getTime() - s.getTime());
 
-                // this.emit('start', this.t);
-
-                document.querySelector('.timer-field').textContent = t.toLocaleTimeString();
+                _this.emit('showTimer', t);
 
                 s = new Date();
-            })();
-        }, this.duration);
-    }
+                timerID = setTimeout(go, 100);
+                console.log('timerIDinner', timerID);
+            },
 
-    timerPause() {
-        // debugger
-        console.log('pause');
-        if (this.s) {
-            clearTimeout(this.timerID);
-            this.s = false;
-        } else {
-            this.s = new Date();
-            this.timerStart();
-        }
+            stop: function () {
+                clearTimeout(timerID);
+                t = new Date();
+                t.setHours(0, 0, 0, 0);
+                s = new Date();
+                console.log('stop');
+            },
+            
+
+            pause: function () {
+                if (s) {
+                    console.log('pause1');
+                    clearTimeout(timerID);
+                    s = false;
+                } else {
+                    console.log('pause2');
+                    s = new Date();
+
+                    _this.emit('go');
+                }
+            }
+        };
     }
 }
 
@@ -96,20 +104,12 @@ class Timer extends EventEmitter {
 
 
 class Model extends EventEmitter {
-    //by default gridsize = 2;
-    //no select grid size
-
     constructor(customize) {
-    // constructor(gridSize = 2) {
         super();
 
-        // this.customize = customize;
         this.gridSize = customize.gridSize;
         this.themes = customize.themes;
 
-        // this.gridSize = gridSize;
-
-        //need fix it
         this.selectedSize = this.gridSize[0];
         this.cards = this.selectedSize * this.selectedSize;
         this.pairs = this.cards / 2;
@@ -120,15 +120,6 @@ class Model extends EventEmitter {
         this.appPath = './img/';
         this.listImages = ['animals-bunny-2.jpg','animals-bunny.jpg','animals-cat-2.jpg','animals-cat.jpg','animals-dog-2.jpg','animals-dog.jpg','animals-horse-2.jpg','animals-horse.jpg','architecture-london-towerbridge.jpg','architecture-moscow-redsquare.jpg','architecture-nederlanden.jpg','architecture-newyork-publiclibrary.jpg','architecture-paris-eiffeltower.jpg','cities-tokyo-night.jpg','diamond.jpg','flower.jpg','flowers-reddahlia.jpg','flowers-waterlillies.jpg','flowers-windclock.jpg','flowers.jpg','landscape-1.jpg','landscape-2.jpg','landscape-australia-outback.jpg','landscape-netherlands-deurningen.jpg','landscape-us-edgewood.jpg'];
     }
-
-//need refactoring, maybe concat main and calculate
-    // main(selectedSize, gridWidth) {
-    //     this.selectedSize = selectedSize;
-    //     this.cards = selectedSize * selectedSize;
-    //     this.pairs = this.cards / 2;
-    //     this.cardSize = gridWidth / selectedSize;
-    //     return this.cardSize;
-    // }
 
 
     calculateCardSize(gridWidth) {
@@ -186,22 +177,6 @@ class Model extends EventEmitter {
             .sort(shuffle);
     
       return doubleListImages;
-    }
-
-    //-------------------
-    //---------------timer
-    //-------------------
-
-    startTimer() {
-        // debugger
-        this.t = new Date((this.t).getTime() + (new Date()).getTime() - (this.s).getTime());
-        // let t = new Date();
-
-        this.emit('startTimer', t);
-
-        this.s = new Date();
-        this.timerID = setTimeout(this.startTimer, 100);
-        return t;
     }
 }
 
@@ -316,7 +291,6 @@ class View extends EventEmitter {
         const selectedSize = parseInt(document.getElementById('grid-size-select').value, 10);
         console.log(selectedSize);
 
-        //need fix it
         this.emit('selectedSize', selectedSize);
     }
 
@@ -351,19 +325,25 @@ class View extends EventEmitter {
     //---------------timer
     //-------------------
 
-    timerStart(t) {
+    showTimer(t) {
         document.querySelector('.timer-field').textContent = t.toLocaleTimeString();
-        const pause = document.getElementById('timer-pause');
-        pause.addEventListener('click', this.handlePause.bind(this));
     }
     
     
     timerBtn() {
-
+        const pause = document.getElementById('timer-pause');
+        pause.addEventListener('click', this.handlePause.bind(this));
     }
 
 
-    handlePause() {
+    removeAddEventListener() {
+        const pause = document.getElementById('timer-pause');
+        pause.removeEventListener('click', this.handlePause.bind(this));
+    }
+
+
+    handlePause({target}) {
+        console.log(target);
         this.emit('pause');
     }
 
@@ -396,7 +376,6 @@ class Controller {
         //-------------------
 
         this.createSelectSize();
-        // need fix it
         view.on('selectedSize', this.selectGridSize.bind(this));
 
         //-------------------
@@ -409,13 +388,22 @@ class Controller {
         //---------------timer
         //-------------------
 
-        this.timerStart();
-        timer.on('start', this.timerStart.bind(this));
+        this.timer1;
         view.on('pause', this.timerPause.bind(this));
+        timer.on('go', this.timerGo.bind(this));
+        timer.on('showTimer', this.showTimer.bind(this));
     }
 
 
     createGrid() {
+        // this.view.removeAddEventListener();
+        // if(this.timer1) {
+
+        //     this.timer1.stop();
+        //     this.timer1 =false;
+        // }
+
+        this.timerStarting();
         const gridWidth = view.gridWidth;
         const cardSize = model.calculateCardSize(gridWidth);
         const listImg = model.createArray();
@@ -469,9 +457,8 @@ class Controller {
     selectGridSize(selectedSize) {
         this.model.selectedSize = selectedSize;
         this.view.clearGrid();
-        //need fix it
+
         this.createGrid();
-    
     }
 
     //-------------------
@@ -488,26 +475,28 @@ class Controller {
     //---------------timer
     //-------------------
 
-    timerStart(t) {
-        // setInterval(this.timer.startTimer, 100);
-        this.timer.timerStart();
-        this.view.timerStart(t);
-
-        // this.view.startTimer(t);
+    timerStarting() {
+        
+        this.timer1 = this.timer.timerStart();
+        this.timer1.start();
+        
+        this.view.timerBtn();
     }
 
+    showTimer(t) {
+        this.view.showTimer(t);
+    }
 
-    // timerBtn() {
-    //     // setInterval(this.timer.startTimer, 100);
-    //     this.timer.timerStart();
-    //     this.view.timerStart(t);
-
-    //     // this.view.startTimer(t);
-    // }
-
+    timerStop() {
+        this.timer1.stop();
+    }
 
     timerPause() {
-        this.timer.timerPause();
+        this.timer1.pause();
+    }
+
+    timerGo() {
+        this.timer1.start();
     }
 }
 
@@ -516,15 +505,11 @@ class Controller {
 //---------------INDEX
 //-------------------------------------------
 
-//future option: put getsize like array and get number from model
 
 const customize = {
-    gridSize: [2, 4, 6],
+    gridSize: [4, 6],
     themes: ['ligth', 'dark']
 };
-
-// const gridSize = [2, 4, 6];
-// const themes = ['ligth', 'dark'];
 
 const timer = new Timer();
 const model = new Model(customize);
